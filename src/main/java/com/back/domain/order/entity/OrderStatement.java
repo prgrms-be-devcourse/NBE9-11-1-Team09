@@ -1,5 +1,6 @@
 package com.back.domain.order.entity;
 
+import com.back.domain.product.entity.Product;
 import com.back.global.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -38,5 +39,11 @@ public class OrderStatement extends BaseEntity {
         this.address = address;
         this.zipCode = zipCode;
         this.order = order;
+    }
+
+    public OrderItem addOrderItem(int quantity, Product product) {
+        OrderItem orderItem = new OrderItem(this, product, quantity);
+        orderItems.add(orderItem);
+        return orderItem;
     }
 }
