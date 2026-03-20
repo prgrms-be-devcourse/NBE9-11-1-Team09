@@ -5,16 +5,17 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Order extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String email;
@@ -24,4 +25,14 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude // toString 무한 루프 방지
     private List<OrderStatement> statements = new ArrayList<>();
+
+    public Order(String email) {
+        this.email = email;
+    }
+
+    public OrderStatement addOrderStatement(String address, String zipCode) {
+        OrderStatement orderStatement = new OrderStatement(address, zipCode, this);
+        statements.add(orderStatement);
+        return orderStatement;
+    }
 }
