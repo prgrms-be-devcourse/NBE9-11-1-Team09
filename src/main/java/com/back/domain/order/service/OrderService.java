@@ -44,7 +44,13 @@ public class OrderService {
     public OrderStatement removeStatementById(int orderId, int orderStatementId) {
         CoffeeOrder order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지않는 orderId입니다."));
-        return order.removeOrderStatement(orderStatementId)
+        OrderStatement removed = order.removeOrderStatement(orderStatementId)
                 .orElseThrow(() -> new NoSuchElementException(("존재하지않는 주문ID입니다.")));
+
+        if (order.getStatements().isEmpty()) {
+            orderRepository.deleteById(orderId);
+        }
+
+        return removed;
     }
 }
