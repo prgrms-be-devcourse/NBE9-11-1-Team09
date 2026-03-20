@@ -2,10 +2,11 @@ package com.back.domain.order.service;
 
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
+import com.back.domain.order.exception.OrderNotFountException;
+import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -43,9 +44,9 @@ public class OrderService {
 
     public OrderStatement removeStatementById(int orderId, int orderStatementId) {
         CoffeeOrder order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지않는 orderId입니다."));
+                .orElseThrow(OrderNotFountException::new);
         OrderStatement removed = order.removeOrderStatement(orderStatementId)
-                .orElseThrow(() -> new NoSuchElementException(("존재하지않는 주문ID입니다.")));
+                .orElseThrow(OrderStatementNotFoundException::new);
 
         if (order.getStatements().isEmpty()) {
             orderRepository.deleteById(orderId);
