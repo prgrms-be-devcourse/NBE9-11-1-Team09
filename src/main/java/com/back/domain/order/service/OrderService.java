@@ -1,11 +1,11 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
-import com.back.domain.order.entity.CoffeeOrder;
+import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -40,4 +40,11 @@ public class OrderService {
                 ));
     }
 
+
+    public OrderStatement removeStatementById(int orderId, int orderStatementId) {
+        CoffeeOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지않는 orderId입니다."));
+        return order.removeOrderStatement(orderStatementId)
+                .orElseThrow(() -> new NoSuchElementException(("존재하지않는 주문ID입니다.")));
+    }
 }

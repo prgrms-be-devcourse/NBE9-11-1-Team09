@@ -5,13 +5,13 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -35,5 +35,16 @@ public class CoffeeOrder extends BaseEntity {
         OrderStatement orderStatement = new OrderStatement(address, zipCode, this);
         statements.add(orderStatement);
         return orderStatement;
+    }
+
+    public Optional<OrderStatement> removeOrderStatement(int statementId) {
+        return statements.stream()
+                .filter(s -> s.getId() == statementId)
+                .findFirst()
+                .map(statement -> {
+                    statements.remove(statement);
+                    statement.setOrder(null); // 양방향 관계 정리
+                    return statement;
+                });
     }
 }
