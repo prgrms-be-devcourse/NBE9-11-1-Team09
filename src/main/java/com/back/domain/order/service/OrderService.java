@@ -1,14 +1,17 @@
 package com.back.domain.order.service;
 
+import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.exception.OrderNotFoundException;
 import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
+import com.back.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,11 +19,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderStatementRepository orderStatementRepository;
+    private final ProductService productService;
+
+
 
     public long count() {
         return orderRepository.count();
