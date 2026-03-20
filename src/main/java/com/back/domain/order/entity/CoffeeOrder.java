@@ -5,18 +5,19 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Order extends BaseEntity {
+public class CoffeeOrder extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -26,7 +27,7 @@ public class Order extends BaseEntity {
     @ToString.Exclude // toString 무한 루프 방지
     private List<OrderStatement> statements = new ArrayList<>();
 
-    public Order(String email) {
+    public CoffeeOrder(String email) {
         this.email = email;
     }
 
