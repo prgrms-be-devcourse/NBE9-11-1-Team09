@@ -1,22 +1,25 @@
 package com.back.domain.order.controller;
 
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
+import com.back.domain.order.dto.update.OrderUpdateRequestDto;
+import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/order")
 public class OrderController {
     private final OrderService orderService;
-
 
     //다건 조회
     @GetMapping
@@ -33,5 +36,12 @@ public class OrderController {
         return OrderQueryResponseDto.from(order);
     }
 
-
+    // 주문 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+            @PathVariable int id,
+            @RequestBody OrderUpdateRequestDto requestDto) {
+        OrderUpdateResponseDto response = orderService.updateOrder(id, requestDto);
+        return ResponseEntity.ok(response);
+    }
 }

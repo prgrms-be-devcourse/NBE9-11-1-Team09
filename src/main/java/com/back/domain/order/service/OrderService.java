@@ -1,19 +1,21 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.query.OrderQueryResponseDto;
+import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.update.OrderUpdateRequestDto;
+import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
-import com.back.domain.order.entity.CoffeeOrder;
+import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
+import com.back.domain.product.entity.Product;
+import com.back.domain.product.repository.ProductRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderStatementRepository orderStatementRepository;
+    private final ProductRepository productRepository;
 
     public long count() {
         return orderRepository.count();
@@ -40,4 +43,35 @@ public class OrderService {
                 ));
     }
 
+    @Transactional
+    public OrderUpdateResponseDto updateOrder(int id, OrderUpdateRequestDto requestDto) {
+        // 기존 주문 조회
+        CoffeeOrder coffeeOrder = findById(id);
+
+        // 기존 주문서 내역 삭제
+        coffeeOrder.getStatements().clear();
+
+        // 새로운 단일 주문서 추가
+        var statementDto = requestDto.orderStatement();
+        OrderStatement statement = coffeeOrder.addOrderStatement(statementDto.address(), statementDto.zipCode());
+
+        // 새로운 상품 목록 추가
+        for (OrderItemRequestDto itemDto : statementDto.orderItems()) {
+            if (itemDto.quantity() <= 0) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "수량은 1개 이상이어야 합니다.");
+            }
+
+            Product product = productRepository.findById(itemDto.productId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            itemDto.productId() + " 상품을 찾을 수 없습니다."
+            ));
+
+            statement.addOrderItem(itemDto.quantity(), product);
+        }
+
+        return OrderUpdateResponseDto.from(coffeeOrder);
+    }
 }
