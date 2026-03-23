@@ -1,6 +1,7 @@
 package com.back.domain.order.service;
 
 import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
@@ -51,25 +52,30 @@ public class OrderService {
         // 기존 주문서 내역 삭제
         coffeeOrder.getStatements().clear();
 
-        // 새로운 단일 주문서 추가
-        var statementDto = requestDto.orderStatement();
-        OrderStatement statement = coffeeOrder.addOrderStatement(statementDto.address(), statementDto.zipCode());
+        // 배열을 순회하며 새로운 단일 주문서 추가
+        for (OrderStatementRequestDto statementDto : requestDto.orderStatements()) {
+            // 주문서 추가
+            OrderStatement statement = coffeeOrder.addOrderStatement(
+                    statementDto.address(),
+                    statementDto.zipCode()
+            );
 
-        // 새로운 상품 목록 추가
-        for (OrderItemRequestDto itemDto : statementDto.orderItems()) {
-            if (itemDto.quantity() <= 0) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "수량은 1개 이상이어야 합니다.");
+            // 새로운 상품 목록 추가
+            for (OrderItemRequestDto itemDto : statementDto.orderItems()) {
+                if (itemDto.quantity() <= 0) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "수량은 1개 이상이어야 합니다.");
+                }
+
+                Product product = productRepository.findById(itemDto.productId())
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                itemDto.productId() + " 상품을 찾을 수 없습니다."
+                        ));
+
+                statement.addOrderItem(itemDto.quantity(), product);
             }
-
-            Product product = productRepository.findById(itemDto.productId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            itemDto.productId() + " 상품을 찾을 수 없습니다."
-            ));
-
-            statement.addOrderItem(itemDto.quantity(), product);
         }
 
         return OrderUpdateResponseDto.from(coffeeOrder);
