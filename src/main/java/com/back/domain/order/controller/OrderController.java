@@ -1,9 +1,12 @@
 package com.back.domain.order.controller;
 
 import com.back.domain.order.dto.common.ApiResponse;
+import com.back.domain.order.dto.common.orderstatement.OrderStatementResponseDto;
 import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
+import com.back.domain.order.dto.update.OrderUpdateRequestDto;
+import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
 import jakarta.validation.Valid;
@@ -11,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,18 +39,41 @@ public class OrderController {
         return OrderQueryResponseDto.from(order);
     }
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<OrderCreateResponseDto>> create(
-            @Valid @RequestBody OrderCreateRequestDto requestDto) {
+    @PostMapping("/new")
+    public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createNewOrder(
+            @Valid @RequestBody OrderCreateRequestDto requestDto
+    ) {
         try {
             OrderCreateResponseDto responseDto =
-                    orderService.createOrder(requestDto.email(), requestDto.orderStatements());
+                    orderService.createNewOrder(requestDto.email(), requestDto.orderStatements());
             return ResponseEntity.ok(ApiResponse.ok(responseDto));
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
-        }catch (Exception e) {
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("서버 내부 오류가 발생했습니다"));
+        }
+    }
+
+    @PostMapping("/statement")
+    public ResponseEntity<ApiResponse<OrderStatementResponseDto>> addStatement(
+            @Valid @RequestBody OrderCreateRequestDto requestDto
+    ) {
+        try {
+            OrderStatementResponseDto responseDto =
+                    orderService.addStatementToExistingOrder(
+                            requestDto.email(),
+                            requestDto.orderStatements()
+                    );
+            return ResponseEntity.ok(ApiResponse.ok(responseDto));
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("서버 내부 오류가 발생했습니다"));
