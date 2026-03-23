@@ -5,10 +5,12 @@ import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
+import com.back.domain.order.exception.OrderNotFoundException;
+import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
-import com.back.domain.product.entity.Product;
 import com.back.domain.order.repository.OrderStatementRepository;
+import com.back.domain.product.entity.Product;
 import com.back.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import com.back.domain.order.exception.OrderNotFoundException;
-import com.back.domain.order.exception.OrderStatementNotFoundException;
 
 @Service
 @RequiredArgsConstructor
