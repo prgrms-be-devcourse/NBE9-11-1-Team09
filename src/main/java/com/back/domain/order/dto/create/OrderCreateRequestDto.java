@@ -1,6 +1,7 @@
 package com.back.domain.order.dto.create;
 
 import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ public record OrderCreateRequestDto (
         String email,
 
         @NotNull(message = "주문 명세는 필수입니다")
+        @Valid
         OrderStatementRequestDto orderStatements
 ) {
 

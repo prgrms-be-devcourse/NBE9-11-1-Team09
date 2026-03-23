@@ -1,6 +1,7 @@
 package com.back.domain.order.dto.common.orderstatement;
 
 import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,6 +17,7 @@ public record OrderStatementRequestDto(
         String zipCode,
 
         @NotNull(message = "주문 항목은 필수입니다")
+        @Valid
         OrderItemRequestDto[] orderItems
 ) {
 
