@@ -4,6 +4,8 @@ import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +35,12 @@ public class OrderController {
         return OrderQueryResponseDto.from(order);
     }
 
-
+    @DeleteMapping("/{orderId}/statement/{orderStatementId}")
+    public ResponseEntity<Void> removeOrderStatement(
+            @PathVariable int orderId,
+            @PathVariable int orderStatementId
+    ) {
+        orderService.removeStatementById(orderId, orderStatementId);
+        return ResponseEntity.noContent().build();
+    }
 }
