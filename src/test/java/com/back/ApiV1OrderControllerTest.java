@@ -45,6 +45,9 @@ class ApiV1OrderControllerTest {
     private OrderRepository orderRepository;
 
     @Autowired
+    private OrderStatementRepository orderStatementRepository;
+
+    @Autowired
     private ProductService productService;
 
     @BeforeEach
@@ -272,7 +275,4 @@ class ApiV1OrderControllerTest {
                 .andExpect(jsonPath("$.message").value("존재하지않는 OrderStatement_Id입니다.")
                 );
     }
-
-    @Autowired
-    private OrderStatementRepository orderStatementRepository;
 }
