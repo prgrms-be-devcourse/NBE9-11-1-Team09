@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "coffee_orders")
 public class CoffeeOrder extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String email;

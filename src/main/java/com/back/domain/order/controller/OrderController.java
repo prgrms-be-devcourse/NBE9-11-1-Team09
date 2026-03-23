@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,7 +21,6 @@ import java.util.List;
 @RequestMapping("/api/v1/order")
 public class OrderController {
     private final OrderService orderService;
-
 
     //다건 조회
     @GetMapping
@@ -76,5 +76,15 @@ public class OrderController {
     ) {
         orderService.removeStatementById(orderId, orderStatementId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 주문 수정
+    @PutMapping("/{orderId}/statement/{orderStatementId}")
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+            @PathVariable int orderId,
+            @PathVariable int orderStatementId,
+            @RequestBody OrderUpdateRequestDto requestDto) {
+        OrderUpdateResponseDto response = orderService.updateOrder(orderId, orderStatementId, requestDto);
+        return ResponseEntity.ok(response);
     }
 }
