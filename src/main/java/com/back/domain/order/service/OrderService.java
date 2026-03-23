@@ -6,6 +6,8 @@ import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
+import com.back.domain.order.exception.OrderNotFoundException;
+import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
@@ -20,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -42,6 +45,19 @@ public class OrderService {
                         HttpStatus.NOT_FOUND,
                         id + " Order not found"
                 ));
+    }
+
+    public void removeStatementById(int orderId, int orderStatementId) {
+        CoffeeOrder order = orderRepository.findById(orderId)
+                .orElseThrow(OrderNotFoundException::new);
+
+        order.removeOrderStatement(orderStatementId)
+                .orElseThrow(OrderStatementNotFoundException::new);
+
+        if (order.getStatements().isEmpty()) {
+            orderRepository.deleteById(orderId);
+        }
+
     }
 
     @Transactional

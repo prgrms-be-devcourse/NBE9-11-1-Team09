@@ -1,10 +1,22 @@
 package com.back;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.back.domain.order.controller.OrderController;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.repository.OrderRepository;
+import com.back.domain.order.repository.OrderStatementRepository;
 import com.back.domain.product.entity.Product;
 import com.back.domain.product.service.ProductService;
+import jakarta.persistence.EntityManager;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,15 +24,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -30,11 +38,17 @@ class ApiV1OrderControllerTest {
 
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private EntityManager em;
 
     @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired private ProductService productService;
+    @Autowired
+    private OrderStatementRepository orderStatementRepository;
+
+    @Autowired
+    private ProductService productService;
 
     @BeforeEach
     void setUp() {
@@ -84,7 +98,8 @@ class ApiV1OrderControllerTest {
                 .andExpect(jsonPath("$[0].orderStatements[0].orderItems[0].quantity").isNumber())
 
                 // 5. 비즈니스 규칙 검증 (예: 수량은 1 이상)
-                .andExpect(jsonPath("$[0].orderStatements[0].orderItems[0].quantity").value(Matchers.greaterThanOrEqualTo(1)));
+                .andExpect(jsonPath("$[0].orderStatements[0].orderItems[0].quantity").value(
+                        Matchers.greaterThanOrEqualTo(1)));
     }
 
     @Test
@@ -145,7 +160,8 @@ class ApiV1OrderControllerTest {
                 .andExpect(jsonPath("$.orderStatements[0].orderItems[0].productItem.price").isNumber())
 
                 // 5. 비즈니스 규칙 검증 (예: 수량은 1 이상)
-                .andExpect(jsonPath("$.orderStatements[0].orderItems[0].quantity").value(Matchers.greaterThanOrEqualTo(1)));
+                .andExpect(jsonPath("$.orderStatements[0].orderItems[0].quantity").value(
+                        Matchers.greaterThanOrEqualTo(1)));
     }
 
     @Test
@@ -160,5 +176,103 @@ class ApiV1OrderControllerTest {
 
         resultActions
                 .andExpect(status().is4xxClientError());
+    }
+
+
+    // 정상적 입력에 대해 호출된 핸들러 & 응답 코드 확인 + db 정상 삭제 확인
+    @Test
+    @DisplayName("정상적인 삭제 요청에 대한 테스트")
+    void delete_t1() throws Exception {
+        //given
+        CoffeeOrder order = orderRepository.findAll().stream()
+                .filter(o -> o.getEmail().equals("test@test.com"))
+                .findFirst()
+                .orElseThrow();
+        int orderId = order.getId();
+
+        OrderStatement statement = orderStatementRepository.findAll().stream()
+                .filter(o -> o.getAddress().equals("서울"))
+                .findFirst()
+                .orElseThrow();
+        int statementId = statement.getId();
+
+        //when
+        ResultActions res = mvc.perform(
+                delete("/api/v1/order/%d/statement/%d".formatted(orderId, statementId))
+        ).andDo(print());
+
+        em.flush();
+        em.clear();
+
+        //then
+        res.andExpect(handler().handlerType(OrderController.class))
+                .andExpect(handler().methodName("removeOrderStatement"))
+                .andExpect(status().isNoContent());
+
+        // order 삭제 확인
+        assertThat(orderRepository.findById(orderId)).isEmpty();
+        // statement 삭제 확인
+        assertThat(orderStatementRepository.findById(statementId)).isEmpty();
+    }
+
+    // 오류에 대한 예외 처리 확인 ( 예외 종류 , 메세지 )
+    @Test
+    @DisplayName("존재하지않는 Order Id에 대한 예외 처리 테스트")
+    void delete_t2() throws Exception {
+
+        int orderId = Integer.MAX_VALUE;
+
+        OrderStatement statement = orderStatementRepository.findAll().stream()
+                .filter(o -> o.getAddress().equals("서울"))
+                .findFirst()
+                .orElseThrow();
+        int statementId = statement.getId();
+
+        //when
+        ResultActions res = mvc.perform(
+                delete("/api/v1/order/%d/statement/%d".formatted(orderId, statementId))
+        ).andDo(print());
+
+        em.flush();
+        em.clear();
+
+        //then
+        res.andExpect(handler().handlerType(OrderController.class))
+                .andExpect(handler().methodName("removeOrderStatement"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("존재하지않는 Order_Id입니다.")
+                );
+    }
+
+    @Test
+    @DisplayName("존재하지않는 OrderStatement Id에 대한 예외 처리 테스트")
+    void delete_t3() throws Exception {
+
+        CoffeeOrder order = orderRepository.findAll().stream()
+                .filter(o -> o.getEmail().equals("test@test.com"))
+                .findFirst()
+                .orElseThrow();
+        int orderId = order.getId();
+
+        int statementId = Integer.MAX_VALUE;
+
+        //when
+        ResultActions res = mvc.perform(
+                delete("/api/v1/order/%d/statement/%d".formatted(orderId, statementId))
+        ).andDo(print());
+
+        em.flush();
+        em.clear();
+
+        //then
+        res.andExpect(handler().handlerType(OrderController.class))
+                .andExpect(handler().methodName("removeOrderStatement"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("존재하지않는 OrderStatement_Id입니다.")
+                );
     }
 }
