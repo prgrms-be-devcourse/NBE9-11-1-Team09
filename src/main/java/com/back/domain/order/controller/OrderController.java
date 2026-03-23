@@ -2,7 +2,6 @@ package com.back.domain.order.controller;
 
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
-import com.back.domain.order.dto.common.ApiResponse;
 import com.back.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}/statement/{orderStatementId}")
-    public ResponseEntity<ApiResponse<Void>> removeOrderStatement(
+    public ResponseEntity<Void> removeOrderStatement(
             @PathVariable int orderId,
             @PathVariable int orderStatementId
     ) {
