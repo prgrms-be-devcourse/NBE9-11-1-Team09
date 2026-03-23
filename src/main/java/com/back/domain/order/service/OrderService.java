@@ -1,9 +1,6 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
-import com.back.domain.order.exception.OrderNotFoundException;
-import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
@@ -12,10 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import com.back.domain.order.exception.OrderNotFoundException;
+import com.back.domain.order.exception.OrderStatementNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +24,26 @@ public class OrderService {
     private final OrderStatementRepository orderStatementRepository;
     private final ProductService productService;
 
+    @Transactional
+    public CoffeeOrder createOrder(String email, OrderStatementRequestDto orderStatements) {
+        if (orderRepository.existsByEmail(email)) {
+            throw new RuntimeException("이미 주문된 이메일입니다", HttpStatus.BAD_REQUEST);
+        }
+        CoffeeOrder order = new Order(email, orderStatements);
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public OrderStatement setDeliveryInfo(String address, String zipCode, Order existingOrder) {
+        OrderStatement orderStatement = new OrderStatement(address, zipCode, existingOrder);
+        return orderStatementRepository.save(orderStatement);
+    }
+
+    @Transactional
+    public OrderItem addMenu(OrderStatement orderStatement, Product product, int quantity) {
+        OrderItem orderItem = new OrderItem(orderStatement, product, quantity);
+        return orderItemRepository.save(orderItem);
+    }
 
 
     public long count() {

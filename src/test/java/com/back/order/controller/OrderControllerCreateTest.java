@@ -1,8 +1,11 @@
 package com.back.order.controller;
 
+import com.back.domain.order.controller.OrderController;
 import com.back.domain.order.entity.Order;
 import com.back.domain.order.entity.OrderItem;
 import com.back.domain.order.entity.OrderStatement;
+import com.back.domain.order.repository.OrderRepository;
+import com.back.domain.order.repository.OrderStatementRepository;
 import com.back.domain.order.service.OrderService;
 import com.back.domain.product.entity.Product;
 import com.back.domain.product.service.ProductService;
@@ -12,16 +15,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @Transactional
-public class OrderControllerTest {
+public class OrderControllerCreateTest {
 
     @Autowired
     private MockMvc mvc;
@@ -35,6 +45,12 @@ public class OrderControllerTest {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderStatementRepository orderStatementRepository;
+
     @BeforeEach
     void setUp() {
         // 테스트용 상품 데이터 생성
@@ -43,7 +59,7 @@ public class OrderControllerTest {
         Product product3 = productService.addProduct("상품 3", 30000, 3);
 
         // 테스트용 주문 데이터 생성
-        Order order1 = orderService.createOrder("tset01@example.com");
+        Order order1 = orderRepository.save("tset01@example.com");
         Order order2 = orderService.createOrder("tset02@example.com");
         Order order3 = orderService.createOrder("tset03@example.com");
 
@@ -62,8 +78,47 @@ public class OrderControllerTest {
     @Test
     @DisplayName("신규 주문 생성 성공 - 201 Created")
     void t1_createNewOrder_Success() throws Exception {
-        String email = "coffeebean23@gmail.com";
-    }
+            String email = "coffeebean23@gmail.com";
+
+            ResultActions resultActions = mvc
+                    .perform(
+                            post("/api/v1/order")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content("""
+                                        {
+                                            "email": "%s",
+                                            "orderStatements": [
+                                                {
+                                                    "address": "경기도 군포시",
+                                                    "zipCode": "12345",
+                                                    "orderItems": [
+                                                        {
+                                                            "productId": 1,
+                                                            "quantity": 2
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                        """.formatted(email))
+                    )
+                    .andDo(print());
+
+            resultActions
+                    .andExpect(handler().handlerType(OrderController.class))
+                    .andExpect(handler().methodName("create"))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.resultCode").value("201-1"))
+                    .andExpect(jsonPath("$.msg").value("주문이 생성되었습니다."))
+                    .andExpect(jsonPath("$.data.orderId").exists())
+                    .andExpect(jsonPath("$.data.email").value(email))
+                    .andExpect(jsonPath("$.data.createdAt").exists());
+
+            // DB 검증
+            Order createdOrder = orderRepository.findByEmail(email).orElse(null);
+            assertThat(createdOrder).isNotNull();
+            assertThat(createdOrder.getEmail()).isEqualTo(email);
+        }
 
     @Test
     @DisplayName("기존 주문에 항목 추가 성공 - 201 Created")
