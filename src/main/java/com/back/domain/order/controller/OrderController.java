@@ -1,15 +1,13 @@
 package com.back.domain.order.controller;
 
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
+import com.back.domain.order.dto.update.OrderUpdateRequestDto;
+import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,7 +16,6 @@ import java.util.List;
 @RequestMapping("/api/v1/order")
 public class OrderController {
     private final OrderService orderService;
-
 
     //다건 조회
     @GetMapping
@@ -42,5 +39,15 @@ public class OrderController {
     ) {
         orderService.removeStatementById(orderId, orderStatementId);
         return ResponseEntity.noContent().build();
+    }
+
+    // 주문 수정
+    @PutMapping("/{orderId}/statement/{orderStatementId}")
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+            @PathVariable int orderId,
+            @PathVariable int orderStatementId,
+            @RequestBody OrderUpdateRequestDto requestDto) {
+        OrderUpdateResponseDto response = orderService.updateOrder(orderId, orderStatementId, requestDto);
+        return ResponseEntity.ok(response);
     }
 }
