@@ -124,4 +124,26 @@ class OrderDeleteControllerTest {
                 .andExpect(jsonPath("$.message").value("존재하지않는 Order_Id입니다.")
                 );
     }
+
+    @Test
+    @DisplayName("존재하지않는 OrderStatement Id에 대한 예외 처리 테스트")
+    void delete_t3() throws Exception {
+
+        //when
+        ResultActions res = mockMvc.perform(
+                delete("/api/v1/order/%d/statement/%d".formatted(EXIST_ID, NOT_EXIST_ID))
+        );
+
+        em.flush();
+        em.clear();
+
+        //then
+        res.andExpect(handler().handlerType(OrderController.class))
+                .andExpect(handler().methodName("removeOrderStatement"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("존재하지않는 OrderStatement_Id입니다.")
+                );
+    }
 }
