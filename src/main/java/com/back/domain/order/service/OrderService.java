@@ -1,7 +1,7 @@
 package com.back.domain.order.service;
 
 import com.back.domain.order.entity.CoffeeOrder;
-import com.back.domain.order.exception.OrderNotFountException;
+import com.back.domain.order.exception.OrderNotFoundException;
 import com.back.domain.order.exception.OrderStatementNotFoundException;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
@@ -42,7 +42,7 @@ public class OrderService {
 
     public void removeStatementById(int orderId, int orderStatementId) {
         CoffeeOrder order = orderRepository.findById(orderId)
-                .orElseThrow(OrderNotFountException::new);
+                .orElseThrow(OrderNotFoundException::new);
 
         order.removeOrderStatement(orderStatementId)
                 .orElseThrow(OrderStatementNotFoundException::new);
