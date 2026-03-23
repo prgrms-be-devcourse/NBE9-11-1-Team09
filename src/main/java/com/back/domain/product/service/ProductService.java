@@ -26,5 +26,11 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    // findAll 로 했을때 => 순서 보장이 안될 수 있다하여 일단 추가했습니다.
+    public Product findById(int id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("상품 없음"));
+    }
+
 
 }
