@@ -53,7 +53,6 @@ public class OrderService {
         return orderRepository.count();
     }
 
-    @Transactional(readOnly = true)
     public List<CoffeeOrder> findAll() {
         return orderRepository.findAll();
     }
