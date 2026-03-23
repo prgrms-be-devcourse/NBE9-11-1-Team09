@@ -10,7 +10,7 @@ public record OrderItemResponseDto(
         int quantity,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {
+){
     public static OrderItemResponseDto from(OrderItem orderItem) {
         return new OrderItemResponseDto(
                 orderItem.getId(),

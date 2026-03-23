@@ -8,6 +8,10 @@ import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,12 +48,37 @@ public class OrderController {
 
 
     @PostMapping
-    public ApiResponse<OrderCreateResponseDto> create(@Valid @RequestBody OrderCreateRequestDto requestDto) {
-        OrderCreateResponseDto responseDto =
-                orderService.createOrder(requestDto.email(),requestDto.orderStatements());
-        return ApiResponse.ok(responseDto);
+    public ResponseEntity<ApiResponse<OrderCreateResponseDto>> create(
+            @Valid @RequestBody OrderCreateRequestDto requestDto) {
+        try {
+            OrderCreateResponseDto responseDto =
+                    orderService.createOrder(requestDto.email(), requestDto.orderStatements());
+            return ResponseEntity.ok(ApiResponse.ok(responseDto));
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage()));
+        }catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("서버 내부 오류가 발생했습니다"));
+        }
     }
 
+    //@Valid 에러를 ApiResponse로 변환
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(
+            MethodArgumentNotValidException e) {
+
+        String message = e.getBindingResult()
+                .getFieldErrors()
+                .getFirst()
+                .getDefaultMessage();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(message));
+    }
     @DeleteMapping("/{orderId}/statement/{orderStatementId}")
     public ResponseEntity<Void> removeOrderStatement(
             @PathVariable int orderId,

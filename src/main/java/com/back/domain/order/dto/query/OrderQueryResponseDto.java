@@ -6,8 +6,7 @@ public record OrderQueryResponseDto (
         int id,
         String email,
         OrderStatementResponseDto[] orderStatements
-)
-{
+) {
     public static OrderQueryResponseDto from(CoffeeOrder order) {
         return new OrderQueryResponseDto(
                 order.getId(),

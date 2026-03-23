@@ -1,12 +1,16 @@
 package com.back.domain.order.service;
 
+import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
+import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
+import com.back.domain.product.entity.Product;
 import com.back.domain.order.repository.OrderStatementRepository;
 import com.back.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,24 +29,22 @@ public class OrderService {
     private final ProductService productService;
 
     @Transactional
-    public CoffeeOrder createOrder(String email, OrderStatementRequestDto orderStatements) {
+    public OrderCreateResponseDto createOrder(String email, OrderStatementRequestDto requestDto) {
         if (orderRepository.existsByEmail(email)) {
-            throw new RuntimeException("이미 주문된 이메일입니다", HttpStatus.BAD_REQUEST);
+            throw new RuntimeException("이미 주문된 이메일입니다");
         }
-        CoffeeOrder order = new Order(email, orderStatements);
-        return orderRepository.save(order);
-    }
+        CoffeeOrder coffeeOrder = new CoffeeOrder(email);
+        OrderStatement orderStatement = new OrderStatement(requestDto.address(), requestDto.zipCode(), coffeeOrder);
+        // 관계 설정
+        coffeeOrder.getStatements().add(orderStatement);
 
-    @Transactional
-    public OrderStatement setDeliveryInfo(String address, String zipCode, Order existingOrder) {
-        OrderStatement orderStatement = new OrderStatement(address, zipCode, existingOrder);
-        return orderStatementRepository.save(orderStatement);
-    }
-
-    @Transactional
-    public OrderItem addMenu(OrderStatement orderStatement, Product product, int quantity) {
-        OrderItem orderItem = new OrderItem(orderStatement, product, quantity);
-        return orderItemRepository.save(orderItem);
+        for (OrderItemRequestDto itemDto : requestDto.orderItems()) {
+            Product product = productService.productExists(itemDto.productId());
+            // 관계 설정
+            orderStatement.addOrderItem(itemDto.quantity(), product);
+        }
+        CoffeeOrder saveCoffeeOrder = orderRepository.save(coffeeOrder);
+        return OrderCreateResponseDto.from(saveCoffeeOrder);
     }
 
 
