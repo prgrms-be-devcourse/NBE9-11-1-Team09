@@ -1,18 +1,19 @@
 package com.back.domain.order.dto.update;
 
-import com.back.domain.order.entity.CoffeeOrder;
+import com.back.domain.order.entity.OrderStatement;
+
 import java.time.LocalDateTime;
 
 public record OrderUpdateResponseDto(
-        Integer orderId,
+        Integer orderStatementId,
         String email,
         LocalDateTime createdAt
 ) {
-    public static OrderUpdateResponseDto from(CoffeeOrder coffeeOrder) {
+    public static OrderUpdateResponseDto from(OrderStatement statement, String email) {
         return new OrderUpdateResponseDto(
-                coffeeOrder.getId(),
-                coffeeOrder.getEmail(),
-                coffeeOrder.getCreateDate()
+                statement.getId(),
+                email,
+                statement.getCreateDate()
         );
     }
 }
