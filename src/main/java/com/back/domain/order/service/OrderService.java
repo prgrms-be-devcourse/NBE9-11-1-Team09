@@ -47,10 +47,25 @@ public class OrderService {
     @Transactional
     public OrderUpdateResponseDto updateOrder(int id, OrderUpdateRequestDto requestDto) {
         // 기존 주문 조회
-        CoffeeOrder coffeeOrder = findById(id);
+        CoffeeOrder coffeeOrder = orderRepository.findById(id)
+                // 없는 주문서에 대한 수정 시도 시 404 에러 발생
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "수정할 " + id + "번 주문서를 찾을 수 없습니다."
+                ));
+
+        // 입력 데이터 검증
+        if (requestDto.id() != id) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "요청 ID가 일치하지 않습니다.");
+        }
 
         // 기존 주문서 내역 삭제
         coffeeOrder.getStatements().clear();
+
+        // 주문서 배열 처리
+        if (requestDto.orderStatements() == null || requestDto.orderStatements().length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최소 하나 이상의 주문서 내용이 필요합니다.");
+        }
 
         // 배열을 순회하며 새로운 단일 주문서 추가
         for (OrderStatementRequestDto statementDto : requestDto.orderStatements()) {
@@ -65,13 +80,13 @@ public class OrderService {
                 if (itemDto.quantity() <= 0) {
                     throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
-                            "수량은 1개 이상이어야 합니다.");
+                            "상품 수량은 최소 1개 이상이어야 합니다.");
                 }
 
                 Product product = productRepository.findById(itemDto.productId())
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
-                                itemDto.productId() + " 상품을 찾을 수 없습니다."
+                                itemDto.productId() + " 번 상품을 찾을 수 없습니다."
                         ));
 
                 statement.addOrderItem(itemDto.quantity(), product);
