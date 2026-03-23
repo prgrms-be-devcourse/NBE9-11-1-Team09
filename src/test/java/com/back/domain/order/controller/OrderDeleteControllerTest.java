@@ -2,7 +2,9 @@ package com.back.domain.order.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.back.domain.order.entity.CoffeeOrder;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -30,9 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 class OrderDeleteControllerTest {
 
-    private static final int EXIST_ID = 1;
-    private static final int NOT_EXIST_ORDER_ID = 5;
-    private static final int NOX_EXIST_STATEMENT_ID = 5;
+    private int EXIST_ID;
+    private int NOT_EXIST_ID;
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,6 +60,12 @@ class OrderDeleteControllerTest {
             statement.addOrderItem(i, product);
 
             orderRepository.save(order);
+            if (i == 1) {
+                EXIST_ID = order.getId();
+            }
+            if (i == 4) {
+                NOT_EXIST_ID = order.getId() + 1;
+            }
         }
 
         em.flush();
@@ -84,7 +92,7 @@ class OrderDeleteControllerTest {
         //then
         res.andExpect(handler().handlerType(OrderController.class))
                 .andExpect(handler().methodName("removeOrderStatement"))
-                .andExpect(status().is(204));
+                .andExpect(status().isNoContent());
 
         // order 삭제 확인
         assertThat(orderRepository.findById(orderId)).isEmpty();
@@ -95,8 +103,25 @@ class OrderDeleteControllerTest {
     }
 
     // 오류에 대한 예외 처리 확인 ( 예외 종류 , 메세지 )
+    @Test
+    @DisplayName("존재하지않는 Order Id에 대한 예외 처리 테스트")
+    void delete_t2() throws Exception {
 
-    // order존재하지않음
+        //when
+        ResultActions res = mockMvc.perform(
+                delete("/api/v1/order/%d/statement/%d".formatted(NOT_EXIST_ID, EXIST_ID))
+        );
 
-    // orderstatement존재하지않음
+        em.flush();
+        em.clear();
+
+        //then
+        res.andExpect(handler().handlerType(OrderController.class))
+                .andExpect(handler().methodName("removeOrderStatement"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("존재하지않는 Order_Id입니다.")
+                );
+    }
 }
