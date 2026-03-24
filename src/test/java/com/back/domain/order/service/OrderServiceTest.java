@@ -1,5 +1,8 @@
 package com.back.domain.order.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
 import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
@@ -19,9 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -111,7 +111,7 @@ class OrderServiceTest {
                 () -> orderService.updateOrder(savedOrder.getId(), 9999, requestDto)
         );
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(exception.getReason()).contains("9999번 주문서을 찾을 수 없습니다.");
+        assertThat(exception.getReason()).contains("9999번 주문서를 찾을 수 없습니다.");
     }
 
     @Test
