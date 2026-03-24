@@ -17,7 +17,7 @@ import java.util.Optional;
 @NoArgsConstructor
 @Table(name = "coffee_orders")
 public class CoffeeOrder extends BaseEntity {
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
     // Order 1 : N OrderStatement

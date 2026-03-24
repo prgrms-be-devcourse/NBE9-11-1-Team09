@@ -1,3 +1,10 @@
 spring:
   datasource:
     url: jdbc:h2:mem:db_dev;MODE=MySQL
+
+logging:
+  level:
+    root: info
+    org.springframework.transaction.interceptor: warn
+    org.hibernate.orm.jdbc.bind: warn
+    org.hibernate.orm.jdbc.extract: warn

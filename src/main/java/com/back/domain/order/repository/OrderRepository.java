@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface OrderRepository extends JpaRepository<CoffeeOrder, Integer> {
     boolean existsByEmail(String email);
     Optional<CoffeeOrder> findByEmail(String email);
-    Optional<CoffeeOrder> findByEmailAndCreatedAtBetween(String email, LocalDateTime start, LocalDateTime end);
+    Optional<CoffeeOrder> findByEmailAndCreateDateBetween(String email, LocalDateTime start, LocalDateTime end);
 }

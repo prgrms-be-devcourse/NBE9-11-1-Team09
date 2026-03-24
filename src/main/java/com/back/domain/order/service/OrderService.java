@@ -138,9 +138,12 @@ public class OrderService {
         LocalDateTime endRange = startRange.plusDays(1);
 
         // 해당 범위 내에 동일 이메일의 주문이 있는지 확인
-        CoffeeOrder order = orderRepository.findByEmailAndCreatedAtBetween(
+        CoffeeOrder order = orderRepository.findByEmailAndCreateDateBetween(
                         requestDto.email(), startRange, endRange)
-                .orElseGet(() -> orderRepository.save(new CoffeeOrder(requestDto.email())));
+                .orElseGet(() -> {
+                    CoffeeOrder newOrder = new CoffeeOrder(requestDto.email());
+                    return orderRepository.save(newOrder);
+                });
 
         // 주문 내용 추가 (새로운 주문이든 기존 주문이든 동일하게 처리)
         var statementDto = requestDto.orderStatements();
