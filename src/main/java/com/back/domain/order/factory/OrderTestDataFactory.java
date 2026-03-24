@@ -28,7 +28,7 @@ public class OrderTestDataFactory {
     public static OrderCreateRequestDto createValidRequestDto(String email, int productId, int quantity) {
         return new OrderCreateRequestDto(
                 email,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
+                new OrderStatementRequestDto(VALID_ADDRESS, VALID_ZIP_CODE,
                         new OrderItemRequestDto[]{createValidOrderItemRequestDto(productId, quantity)})
         );
     }
@@ -41,9 +41,9 @@ public class OrderTestDataFactory {
     public static OrderCreateRequestDto createRequestDtoWithNonExistentProduct(String email, int nonExistentProductId) {
         return new OrderCreateRequestDto(
                 email,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
+                new OrderStatementRequestDto(VALID_ADDRESS, VALID_ZIP_CODE,
                         new OrderItemRequestDto[]{
-                                new OrderItemRequestDto(0, nonExistentProductId, DEFAULT_QUANTITY)
+                                new OrderItemRequestDto(nonExistentProductId, DEFAULT_QUANTITY)
                         })
         );
     }
@@ -97,7 +97,7 @@ public class OrderTestDataFactory {
             // ✅ 검증 제거 - Controller/Service 에서 @Valid 로 수행
             return new OrderCreateRequestDto(
                     email,
-                    new OrderStatementRequestDto(0, address, zipCode,
+                    new OrderStatementRequestDto(address, zipCode,
                             items.toArray(OrderItemRequestDto[]::new))
             );
         }
@@ -107,7 +107,7 @@ public class OrderTestDataFactory {
     public static OrderCreateRequestDto createRequestDtoWithEmailInvalidFormat(int productId) {
         return new OrderCreateRequestDto(
                 INVALID_EMAIL_FORMAT,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
+                new OrderStatementRequestDto(VALID_ADDRESS, VALID_ZIP_CODE,
                         new OrderItemRequestDto[]{createValidOrderItemRequestDto(productId, DEFAULT_QUANTITY)})
         );
     }
@@ -115,7 +115,7 @@ public class OrderTestDataFactory {
     public static OrderCreateRequestDto createRequestDtoWithZipCodeTooShort(int productId) {
         return new OrderCreateRequestDto(
                 VALID_EMAIL,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, ZIP_CODE_TOO_SHORT,
+                new OrderStatementRequestDto(VALID_ADDRESS, ZIP_CODE_TOO_SHORT,
                         new OrderItemRequestDto[]{createValidOrderItemRequestDto(productId, DEFAULT_QUANTITY)})
         );
     }
@@ -123,15 +123,15 @@ public class OrderTestDataFactory {
     public static OrderCreateRequestDto createRequestDtoWithQuantityZero(int productId) {
         return new OrderCreateRequestDto(
                 VALID_EMAIL,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
+                new OrderStatementRequestDto(VALID_ADDRESS, VALID_ZIP_CODE,
                         new OrderItemRequestDto[]{
-                                new OrderItemRequestDto(0, productId, ZERO_QUANTITY)
+                                new OrderItemRequestDto(productId, ZERO_QUANTITY)
                         })
         );
     }
 
     // ==================== 🔧 내부 헬퍼 메서드 ====================
     private static OrderItemRequestDto createValidOrderItemRequestDto(int productId, int quantity) {
-        return new OrderItemRequestDto(0, productId, quantity);
+        return new OrderItemRequestDto(productId, quantity);
     }
 }
