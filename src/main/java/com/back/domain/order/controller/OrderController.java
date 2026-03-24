@@ -16,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,9 +37,10 @@ public class OrderController implements OrderControllerDocs {
         CoffeeOrder order = orderService.findById(id);
         return OrderQueryResponseDto.from(order);
     }
-    @PostMapping
+
+    @Override
     public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createNewOrder(
-            @Valid @RequestBody OrderCreateRequestDto requestDto
+            @Valid OrderCreateRequestDto requestDto
     ) {
         try {
             OrderCreateResponseDto responseDto =
