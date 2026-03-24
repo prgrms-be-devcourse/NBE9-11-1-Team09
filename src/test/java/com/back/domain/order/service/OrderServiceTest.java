@@ -52,10 +52,10 @@ class OrderServiceTest {
     void updateOrder() {
         // 2개의 주문서가 담긴 배열 생성
         OrderItemRequestDto[] items = {
-                new OrderItemRequestDto(0, coffeeBean.getId(), 2)
+                new OrderItemRequestDto(coffeeBean.getId(), 2)
         };
 
-        OrderStatementRequestDto statement = new OrderStatementRequestDto(0, "창원시 성산구", "51427", items);
+        OrderStatementRequestDto statement = new OrderStatementRequestDto("창원시 성산구", "51427", items);
 
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto(
                 "dnclsehd122@gmail.com",
@@ -81,9 +81,9 @@ class OrderServiceTest {
     void updateOrderNotFound() {
         // Given: 존재하지 않는 orderId (9999)
         OrderItemRequestDto[] items = {
-                new OrderItemRequestDto(0, coffeeBean.getId(), 2)
+                new OrderItemRequestDto(coffeeBean.getId(), 2)
         };
-        OrderStatementRequestDto statement = new OrderStatementRequestDto(0, "서울시 강남구", "06000", items);
+        OrderStatementRequestDto statement = new OrderStatementRequestDto("서울시 강남구", "06000", items);
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto("test@email.com", statement);
 
         // When & Then: NOT_FOUND 예외 발생 확인
@@ -100,9 +100,9 @@ class OrderServiceTest {
     void updateOrderStatementNotFound() {
         // Given: 존재하지 않는 orderStatementId (9999)
         OrderItemRequestDto[] items = {
-                new OrderItemRequestDto(0, coffeeBean.getId(), 2)
+                new OrderItemRequestDto(coffeeBean.getId(), 2)
         };
-        OrderStatementRequestDto statement = new OrderStatementRequestDto(0, "부산시 해운대구", "48000", items);
+        OrderStatementRequestDto statement = new OrderStatementRequestDto("부산시 해운대구", "48000", items);
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto("dnclsehd122@gmail.com", statement);
 
         // When & Then: NOT_FOUND 예외 발생 확인
@@ -119,9 +119,9 @@ class OrderServiceTest {
     void updateOrderProductNotFound() {
         // Given: 존재하지 않는 productId (9999) 를 주문서에 포함
         OrderItemRequestDto[] items = {
-                new OrderItemRequestDto(0, 9999, 2)  // ❌ 존재하지 않는 상품 ID
+                new OrderItemRequestDto(9999, 2)  // ❌ 존재하지 않는 상품 ID
         };
-        OrderStatementRequestDto statement = new OrderStatementRequestDto(0, "대구시 중구", "41000", items);
+        OrderStatementRequestDto statement = new OrderStatementRequestDto("대구시 중구", "41000", items);
         OrderUpdateRequestDto requestDto = new OrderUpdateRequestDto("dnclsehd122@gmail.com", statement);
 
         // When & Then: BAD_REQUEST 예외 발생 확인

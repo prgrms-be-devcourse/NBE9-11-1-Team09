@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record OrderStatementRequestDto(
-        int id,
-
         @NotBlank(message = "주소는 필수입니다")
         String address,
 
