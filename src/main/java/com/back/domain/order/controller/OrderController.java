@@ -1,5 +1,6 @@
 package com.back.domain.order.controller;
 
+import com.back.domain.order.controller.docs.OrderControllerDocs;
 import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
@@ -9,35 +10,35 @@ import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
 import com.back.global.response.ApiResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/order")
-public class OrderController {
+public class OrderController implements OrderControllerDocs {
     private final OrderService orderService;
 
     //다건 조회
-    @GetMapping
-    public List<OrderQueryResponseDto> findAll(){
+    @Override
+    public List<OrderQueryResponseDto> findAll() {
         return orderService.findAll().stream()
                 .map(OrderQueryResponseDto::from)
                 .toList();
     }
 
     //id로 조회한 order 보여주기 : 단건 조회
-    @GetMapping("/{id}")
-    public OrderQueryResponseDto findById(@PathVariable int id){
+    @Override
+    public OrderQueryResponseDto findById(int id) {
         CoffeeOrder order = orderService.findById(id);
         return OrderQueryResponseDto.from(order);
     }
-
     @PostMapping
     public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createNewOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto
@@ -58,19 +59,19 @@ public class OrderController {
     }
 
     // 주문 수정
-    @PutMapping("/{orderId}/statement/{orderStatementId}")
+    @Override
     public ResponseEntity<OrderUpdateResponseDto> updateOrder(
-            @PathVariable int orderId,
-            @PathVariable int orderStatementId,
-            @RequestBody OrderUpdateRequestDto requestDto) {
+            int orderId,
+            int orderStatementId,
+            OrderUpdateRequestDto requestDto) {
         OrderUpdateResponseDto response = orderService.updateOrder(orderId, orderStatementId, requestDto);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{orderId}/statement/{orderStatementId}")
+    @Override
     public ResponseEntity<Void> removeOrderStatement(
-            @PathVariable int orderId,
-            @PathVariable int orderStatementId
+            int orderId,
+            int orderStatementId
     ) {
         orderService.removeStatementById(orderId, orderStatementId);
         return ResponseEntity.noContent().build();
