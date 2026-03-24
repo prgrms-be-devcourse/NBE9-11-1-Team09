@@ -1,6 +1,6 @@
-package com.back.domain.order.dto.common.orderstatement;
+package com.back.domain.order.dto.orderstatement;
 
-import com.back.domain.order.dto.common.orderitem.OrderItemResponseDto;
+import com.back.domain.order.dto.orderitem.OrderItemResponseDto;
 import com.back.domain.order.entity.OrderStatement;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.back.domain.order.dto.common.orderitem;
+package com.back.domain.order.dto.orderitem;
 
 import com.back.domain.order.entity.OrderItem;
 import com.back.domain.product.dto.ProductItemResponseDto;
@@ -10,7 +10,7 @@ public record OrderItemResponseDto(
         int quantity,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-) {
+){
     public static OrderItemResponseDto from(OrderItem orderItem) {
         return new OrderItemResponseDto(
                 orderItem.getId(),

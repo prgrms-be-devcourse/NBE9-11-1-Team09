@@ -1,11 +1,19 @@
 package com.back.domain.order.dto.create;
 
-import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record OrderCreateRequestDto (
-        int id,
+        @NotBlank(message = "이메일은 필수입니다")
+        @Email(message = "이메일 형식이 올바르지 않습니다")
         String email,
-        OrderStatementRequestDto[] OrderStatements
+
+        @NotNull(message = "주문 명세는 필수입니다")
+        @Valid
+        OrderStatementRequestDto orderStatements
 ) {
 
 }

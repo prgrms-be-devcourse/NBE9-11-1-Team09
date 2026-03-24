@@ -1,7 +1,7 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
-import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;

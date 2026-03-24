@@ -1,18 +1,15 @@
 package com.back.domain.order.entity;
 
 import com.back.global.entity.BaseEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Getter
@@ -24,9 +21,8 @@ public class CoffeeOrder extends BaseEntity {
     private String email;
 
     // Order 1 : N OrderStatement
-    // OrderStatement 쪽에 'order' 필드가 매핑됨
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude // toString 무한 루프 방지
+    @ToString.Exclude
     private List<OrderStatement> statements = new ArrayList<>();
 
     public CoffeeOrder(String email) {
@@ -35,7 +31,7 @@ public class CoffeeOrder extends BaseEntity {
 
     public OrderStatement addOrderStatement(String address, String zipCode) {
         OrderStatement orderStatement = new OrderStatement(address, zipCode, this);
-        statements.add(orderStatement);
+        this.statements.add(orderStatement);
         return orderStatement;
     }
 

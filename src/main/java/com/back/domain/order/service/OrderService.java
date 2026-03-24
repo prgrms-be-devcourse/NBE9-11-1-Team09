@@ -1,17 +1,19 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.create.OrderCreateResponseDto;
+import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.exception.OrderNotFoundException;
 import com.back.domain.order.exception.OrderStatementNotFoundException;
-import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
 import com.back.domain.product.entity.Product;
 import com.back.domain.product.repository.ProductRepository;
+import com.back.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,18 +24,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final OrderStatementRepository orderStatementRepository;
     private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public long count() {
-        return orderRepository.count();
-    }
-
-    @Transactional(readOnly = true)
     public List<CoffeeOrder> findAll() {
         return orderRepository.findAll();
     }
@@ -47,6 +44,28 @@ public class OrderService {
                 ));
     }
 
+    @Transactional
+    public OrderCreateResponseDto createNewOrder(String email, OrderStatementRequestDto requestDto) {
+        // 주문 조회 및 없을시 새로 생성
+        CoffeeOrder coffeeOrder = orderRepository.findByEmail(email)
+                .orElseGet(() -> new CoffeeOrder(email));
+        // 주문 명세 추가
+        OrderStatement orderStatement = coffeeOrder.addOrderStatement(
+                requestDto.address(),
+                requestDto.zipCode()
+        );
+
+        for (OrderItemRequestDto itemDto : requestDto.orderItems()) {
+            Product product = productService.productExists(itemDto.productId());
+            orderStatement.addOrderItem(itemDto.quantity(), product);
+        }
+
+        CoffeeOrder savedOrder = orderRepository.save(coffeeOrder);
+        return OrderCreateResponseDto.from(savedOrder);
+    }
+
+
+    @Transactional
     public void removeStatementById(int orderId, int orderStatementId) {
         CoffeeOrder order = orderRepository.findById(orderId)
                 .orElseThrow(OrderNotFoundException::new);
@@ -60,6 +79,7 @@ public class OrderService {
 
     }
 
+    @Transactional
     public OrderUpdateResponseDto updateOrder(
             int orderId,
             int orderStatementId,
