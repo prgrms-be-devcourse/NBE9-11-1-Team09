@@ -1,6 +1,6 @@
-package com.back.domain.order.dto.common.orderstatement;
+package com.back.domain.order.dto.orderstatement;
 
-import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

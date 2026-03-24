@@ -1,8 +1,7 @@
 package com.back.domain.order.factory;
 
-
-import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
-import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -16,17 +15,14 @@ public class OrderTestDataFactory {
     // ==================== 📌 테스트 데이터 상수 ====================
     public static final String VALID_EMAIL = "test@email.com";
     public static final String VALID_ADDRESS = "서울시 강남구 테헤란로 123";
+    public static final String ALTERNATIVE_ADDRESS = "부산시 해운대구 센텀로 456";  // ✅ 추가
     public static final String VALID_ZIP_CODE = "12345";
     public static final int DEFAULT_QUANTITY = 2;
 
     // 검증 경계값
-    public static final int ZERO_PRODUCT_ID = 0;
-    public static final int NEGATIVE_PRODUCT_ID = -1;
     public static final int ZERO_QUANTITY = 0;
-    public static final int NEGATIVE_QUANTITY = -1;
     public static final String ZIP_CODE_TOO_SHORT = "1234";
     public static final String INVALID_EMAIL_FORMAT = "invalid-email";
-    public static final String BLANK_STRING = " ";
 
     // ==================== ✅ 검증 성공 데이터 (Request) ====================
     public static OrderCreateRequestDto createValidRequestDto(String email, int productId, int quantity) {
@@ -36,10 +32,27 @@ public class OrderTestDataFactory {
                         new OrderItemRequestDto[]{createValidOrderItemRequestDto(productId, quantity)})
         );
     }
+
     public static OrderCreateRequestDto createValidRequestDto(String email, int productId) {
         return createValidRequestDto(email, productId, DEFAULT_QUANTITY);
     }
 
+    // ==================== ❌ 비즈니스 로직 실패용 데이터 ====================
+    public static OrderCreateRequestDto createRequestDtoWithNonExistentProduct(String email, int nonExistentProductId) {
+        return new OrderCreateRequestDto(
+                email,
+                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
+                        new OrderItemRequestDto[]{
+                                new OrderItemRequestDto(0, nonExistentProductId, DEFAULT_QUANTITY)
+                        })
+        );
+    }
+
+    public static OrderCreateRequestDto createRequestDtoWithNonExistentProduct(int nonExistentProductId) {
+        return createRequestDtoWithNonExistentProduct(VALID_EMAIL, nonExistentProductId);
+    }
+
+    // ==================== ✅ Builder 패턴 ====================
     public static OrderCreateRequestDtoBuilder builder() {
         return new OrderCreateRequestDtoBuilder();
     }
@@ -81,9 +94,7 @@ public class OrderTestDataFactory {
         }
 
         public OrderCreateRequestDto build() {
-            if (items.isEmpty()) {
-                throw new IllegalStateException("최소 1 개 이상의 주문 항목이 필요합니다");
-            }
+            // ✅ 검증 제거 - Controller/Service 에서 @Valid 로 수행
             return new OrderCreateRequestDto(
                     email,
                     new OrderStatementRequestDto(0, address, zipCode,
@@ -93,7 +104,6 @@ public class OrderTestDataFactory {
     }
 
     // ==================== ❌ 검증 실패용 데이터 (Request) ====================
-    // Email 검증 실패
     public static OrderCreateRequestDto createRequestDtoWithEmailInvalidFormat(int productId) {
         return new OrderCreateRequestDto(
                 INVALID_EMAIL_FORMAT,
@@ -102,7 +112,6 @@ public class OrderTestDataFactory {
         );
     }
 
-    // ZipCode 검증 실패
     public static OrderCreateRequestDto createRequestDtoWithZipCodeTooShort(int productId) {
         return new OrderCreateRequestDto(
                 VALID_EMAIL,
@@ -111,44 +120,12 @@ public class OrderTestDataFactory {
         );
     }
 
-    // ProductId 검증 실패
-    public static OrderCreateRequestDto createRequestDtoWithProductIdZero() {
-        return new OrderCreateRequestDto(
-                VALID_EMAIL,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
-                        new OrderItemRequestDto[]{
-                                new OrderItemRequestDto(0, ZERO_PRODUCT_ID, DEFAULT_QUANTITY)
-                        })
-        );
-    }
-
-    public static OrderCreateRequestDto createRequestDtoWithProductIdNegative() {
-        return new OrderCreateRequestDto(
-                VALID_EMAIL,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
-                        new OrderItemRequestDto[]{
-                                new OrderItemRequestDto(0, NEGATIVE_PRODUCT_ID, DEFAULT_QUANTITY)
-                        })
-        );
-    }
-
-    // Quantity 검증 실패
     public static OrderCreateRequestDto createRequestDtoWithQuantityZero(int productId) {
         return new OrderCreateRequestDto(
                 VALID_EMAIL,
                 new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
                         new OrderItemRequestDto[]{
                                 new OrderItemRequestDto(0, productId, ZERO_QUANTITY)
-                        })
-        );
-    }
-
-    public static OrderCreateRequestDto createRequestDtoWithQuantityNegative(int productId) {
-        return new OrderCreateRequestDto(
-                VALID_EMAIL,
-                new OrderStatementRequestDto(0, VALID_ADDRESS, VALID_ZIP_CODE,
-                        new OrderItemRequestDto[]{
-                                new OrderItemRequestDto(0, productId, NEGATIVE_QUANTITY)
                         })
         );
     }

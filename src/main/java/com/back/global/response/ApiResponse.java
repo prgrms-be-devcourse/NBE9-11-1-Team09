@@ -1,4 +1,4 @@
-package com.back.domain.order.dto.common;
+package com.back.global.response;
 
 import lombok.Builder;
 import lombok.Getter;

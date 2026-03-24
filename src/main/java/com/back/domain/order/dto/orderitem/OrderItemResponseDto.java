@@ -1,4 +1,4 @@
-package com.back.domain.order.dto.common.orderitem;
+package com.back.domain.order.dto.orderitem;
 
 import com.back.domain.order.entity.OrderItem;
 import com.back.domain.product.dto.ProductItemResponseDto;

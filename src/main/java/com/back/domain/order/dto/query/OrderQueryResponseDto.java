@@ -1,6 +1,6 @@
 package com.back.domain.order.dto.query;
 
-import com.back.domain.order.dto.common.orderstatement.OrderStatementResponseDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 
 public record OrderQueryResponseDto (

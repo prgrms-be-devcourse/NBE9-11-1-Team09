@@ -1,6 +1,6 @@
 package com.back.domain.order.dto.create;
 
-import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

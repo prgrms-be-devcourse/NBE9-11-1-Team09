@@ -1,16 +1,14 @@
 package com.back.domain.order.service;
 
-import com.back.domain.order.dto.common.orderitem.OrderItemRequestDto;
-import com.back.domain.order.dto.common.orderstatement.OrderStatementRequestDto;
-import com.back.domain.order.dto.common.orderstatement.OrderStatementResponseDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
+import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
+import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.exception.OrderNotFoundException;
 import com.back.domain.order.exception.OrderStatementNotFoundException;
-import com.back.domain.order.repository.OrderItemRepository;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.order.repository.OrderStatementRepository;
 import com.back.domain.product.entity.Product;
@@ -29,65 +27,9 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final OrderStatementRepository orderStatementRepository;
     private final ProductRepository productRepository;
     private final ProductService productService;
-
-    @Transactional
-    public OrderCreateResponseDto createNewOrder(String email, OrderStatementRequestDto requestDto) {
-        if (orderRepository.existsByEmail(email)) {
-            throw new RuntimeException("이미 주문된 이메일입니다");
-        }
-
-        CoffeeOrder coffeeOrder = new CoffeeOrder(email);
-        OrderStatement orderStatement = coffeeOrder.addOrderStatement(
-                requestDto.address(),
-                requestDto.zipCode()
-        );
-
-
-        for (OrderItemRequestDto itemDto : requestDto.orderItems()) {
-            Product product = productService.productExists(itemDto.productId());
-            orderStatement.addOrderItem(itemDto.quantity(), product);
-        }
-
-        CoffeeOrder savedOrder = orderRepository.save(coffeeOrder);
-        return OrderCreateResponseDto.from(savedOrder);
-    }
-
-    @Transactional
-    public OrderStatementResponseDto addStatementToExistingOrder(
-            String email,
-            OrderStatementRequestDto requestDto
-    ) {
-        CoffeeOrder coffeeOrder = orderRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다: " + email));
-
-        OrderStatement orderStatement = coffeeOrder.addOrderStatement(
-                requestDto.address(),
-                requestDto.zipCode()
-        );
-
-        for (OrderItemRequestDto itemDto : requestDto.orderItems()) {
-            Product product = productService.productExists(itemDto.productId());
-            orderStatement.addOrderItem(itemDto.quantity(), product);
-        }
-
-        orderRepository.save(coffeeOrder);
-        OrderStatement savedStatement = coffeeOrder.getStatements().stream()
-                .filter(s -> s.getAddress().equals(requestDto.address()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("명세 저장 실패"));
-
-        // 6. DTO 생성 및 반환
-        return OrderStatementResponseDto.from(savedStatement);
-    }
-
-
-    public long count() {
-        return orderRepository.count();
-    }
 
     public List<CoffeeOrder> findAll() {
         return orderRepository.findAll();
@@ -101,6 +43,27 @@ public class OrderService {
                         id + " Order not found"
                 ));
     }
+
+    @Transactional
+    public OrderCreateResponseDto createNewOrder(String email, OrderStatementRequestDto requestDto) {
+        // 주문 조회 및 없을시 새로 생성
+        CoffeeOrder coffeeOrder = orderRepository.findByEmail(email)
+                .orElseGet(() -> new CoffeeOrder(email));
+        // 주문 명세 추가
+        OrderStatement orderStatement = coffeeOrder.addOrderStatement(
+                requestDto.address(),
+                requestDto.zipCode()
+        );
+
+        for (OrderItemRequestDto itemDto : requestDto.orderItems()) {
+            Product product = productService.productExists(itemDto.productId());
+            orderStatement.addOrderItem(itemDto.quantity(), product);
+        }
+
+        CoffeeOrder savedOrder = orderRepository.save(coffeeOrder);
+        return OrderCreateResponseDto.from(savedOrder);
+    }
+
 
     @Transactional
     public void removeStatementById(int orderId, int orderStatementId) {

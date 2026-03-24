@@ -1,7 +1,5 @@
 package com.back.domain.order.controller;
 
-import com.back.domain.order.dto.common.ApiResponse;
-import com.back.domain.order.dto.common.orderstatement.OrderStatementResponseDto;
 import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
@@ -9,6 +7,7 @@ import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
 import com.back.domain.order.entity.CoffeeOrder;
 import com.back.domain.order.service.OrderService;
+import com.back.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +38,7 @@ public class OrderController {
         return OrderQueryResponseDto.from(order);
     }
 
-    @PostMapping("/new")
+    @PostMapping
     public ResponseEntity<ApiResponse<OrderCreateResponseDto>> createNewOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto
     ) {
@@ -58,26 +57,23 @@ public class OrderController {
         }
     }
 
-    @PostMapping("/statement")
-    public ResponseEntity<ApiResponse<OrderStatementResponseDto>> addStatement(
-            @Valid @RequestBody OrderCreateRequestDto requestDto
+    // 주문 수정
+    @PutMapping("/{orderId}/statement/{orderStatementId}")
+    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
+            @PathVariable int orderId,
+            @PathVariable int orderStatementId,
+            @RequestBody OrderUpdateRequestDto requestDto) {
+        OrderUpdateResponseDto response = orderService.updateOrder(orderId, orderStatementId, requestDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{orderId}/statement/{orderStatementId}")
+    public ResponseEntity<Void> removeOrderStatement(
+            @PathVariable int orderId,
+            @PathVariable int orderStatementId
     ) {
-        try {
-            OrderStatementResponseDto responseDto =
-                    orderService.addStatementToExistingOrder(
-                            requestDto.email(),
-                            requestDto.orderStatements()
-                    );
-            return ResponseEntity.ok(ApiResponse.ok(responseDto));
-        } catch (RuntimeException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("서버 내부 오류가 발생했습니다"));
-        }
+        orderService.removeStatementById(orderId, orderStatementId);
+        return ResponseEntity.noContent().build();
     }
 
     //@Valid 에러를 ApiResponse로 변환
@@ -93,23 +89,5 @@ public class OrderController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(message));
-    }
-    @DeleteMapping("/{orderId}/statement/{orderStatementId}")
-    public ResponseEntity<Void> removeOrderStatement(
-            @PathVariable int orderId,
-            @PathVariable int orderStatementId
-    ) {
-        orderService.removeStatementById(orderId, orderStatementId);
-        return ResponseEntity.noContent().build();
-    }
-
-    // 주문 수정
-    @PutMapping("/{orderId}/statement/{orderStatementId}")
-    public ResponseEntity<OrderUpdateResponseDto> updateOrder(
-            @PathVariable int orderId,
-            @PathVariable int orderStatementId,
-            @RequestBody OrderUpdateRequestDto requestDto) {
-        OrderUpdateResponseDto response = orderService.updateOrder(orderId, orderStatementId, requestDto);
-        return ResponseEntity.ok(response);
     }
 }
