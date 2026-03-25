@@ -1,27 +1,25 @@
 package com.back.domain.product.controller;
 
+import com.back.domain.product.controller.docs.ProductControllerDocs;
 import com.back.domain.product.dto.ProductItemResponseDto;
 import com.back.domain.product.dto.query.ProductQueryResponseDto;
 import com.back.domain.product.entity.Product;
 import com.back.domain.product.service.ProductService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Product", description = "제품 처리 API")
-@RequestMapping("/api/v1/product")
-public class ProductController {
+public class ProductController implements ProductControllerDocs {
+
     private final ProductService productService;
 
-    @GetMapping
+    @Override
     public ProductQueryResponseDto findAll() {
-        List<Product> products = this.productService.findAll();
+        // Service 에서 반환한 Entity 리스트를 DTO 로 변환
+        List<Product> products = productService.findAll();
 
         List<ProductItemResponseDto> itemDtos = products.stream()
                 .map(ProductItemResponseDto::from)
