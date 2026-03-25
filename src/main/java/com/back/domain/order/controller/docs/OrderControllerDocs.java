@@ -2,7 +2,6 @@ package com.back.domain.order.controller.docs;
 
 import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import com.back.domain.order.dto.create.OrderCreateResponseDto;
-import com.back.domain.order.dto.merge.OrderMergeResponseDto;
 import com.back.domain.order.dto.query.OrderQueryResponseDto;
 import com.back.domain.order.dto.update.OrderUpdateRequestDto;
 import com.back.domain.order.dto.update.OrderUpdateResponseDto;
@@ -218,74 +217,6 @@ public interface OrderControllerDocs {
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "주문 생성 요청 DTO",
-                    required = true,
-                    content = @Content(
-                            schema = @Schema(implementation = OrderCreateRequestDto.class)
-                    )
-            )
-            @RequestBody OrderCreateRequestDto requestDto
-    );
-
-    // 신규 병합 API 명세서
-    @Operation(summary = "주문 병합 (총 금액 반환)", description = "새로운 주문 요청을 전달받아 기존 주문서와 병합하고, 누적된 총 결제 금액을 반환합니다.")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "주문 병합 성공",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
-                                            {
-                                              "success": true,
-                                              "message": "성공",
-                                              "data": {
-                                                        "orderStatementId": 2,
-                                                        "email": "test@test.com",
-                                                        "createdAt": "2026-03-24T14:30:00",
-                                                        "totalAmount": 7500
-                                                        }
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "잘못된 요청",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
-                                            {
-                                              "success": false,
-                                              "message": "잘못된 입력입니다."
-                                            }
-                                            """
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "서버 내부 오류",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
-                                            {
-                                              "success": false,
-                                              "message": "서버 내부 오류가 발생했습니다"
-                                            }
-                                            """
-                            )
-                    )
-            )
-    })
-    @PostMapping("/merge")
-    ResponseEntity<com.back.global.response.ApiResponse<OrderMergeResponseDto>> createOrMergeOrder(
-
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "주문 병합 요청 DTO",
                     required = true,
                     content = @Content(
                             schema = @Schema(implementation = OrderCreateRequestDto.class)
