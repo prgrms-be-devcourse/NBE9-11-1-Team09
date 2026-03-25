@@ -15,7 +15,7 @@ public record OrderUpdateResponseDto(
                 statement.getId(),
                 email,
                 statement.getCreateDate(),
-                statement.getTotalAmount()
+                statement.getOrder().getTotalAmount()
         );
     }
 }
