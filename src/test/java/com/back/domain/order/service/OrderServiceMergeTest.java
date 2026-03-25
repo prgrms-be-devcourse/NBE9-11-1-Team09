@@ -8,6 +8,7 @@ import com.back.domain.order.dto.create.OrderCreateRequestDto;
 import com.back.domain.order.dto.orderitem.OrderItemRequestDto;
 import com.back.domain.order.dto.orderstatement.OrderStatementRequestDto;
 import com.back.domain.order.entity.CoffeeOrder;
+import com.back.domain.order.entity.OrderStatement;
 import com.back.domain.order.repository.OrderRepository;
 import com.back.domain.product.entity.Product;
 import com.back.domain.product.repository.ProductRepository;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -49,17 +51,14 @@ class OrderServiceMergeTest {
         OrderStatementRequestDto statement1 = new OrderStatementRequestDto("경상남도 창원시", "51427", items);
         OrderStatementRequestDto statement2 = new OrderStatementRequestDto("세종특별자치시 조치원읍", "30016", items);
 
-        OrderCreateRequestDto request1 = new OrderCreateRequestDto(email, statement1);
-        OrderCreateRequestDto request2 = new OrderCreateRequestDto(email, statement2);
+        // 시간 설정
+        LocalDateTime fixedTime = LocalDateTime.of(2026, 3, 25, 10, 0);
 
-        // 현재 시간
-        LocalDateTime fixedTime = LocalDateTime.now();
-
-        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class)) {
+        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
             mockedTime.when(LocalDateTime::now).thenReturn(fixedTime);
 
-            orderService.createOrMergeOrder(request1);
-            orderService.createOrMergeOrder(request2);
+            orderService.createNewOrder(email, statement1);
+            orderService.createNewOrder(email, statement2);
         }
 
         List<CoffeeOrder> orders = orderRepository.findAll();
@@ -74,24 +73,32 @@ class OrderServiceMergeTest {
         String email = "dnclsehd122@gmail.com";
         OrderItemRequestDto[] items = { new OrderItemRequestDto(coffeeBean.getId(), 2) };
         OrderStatementRequestDto statement = new OrderStatementRequestDto("경상남도 창원시", "51427", items);
-        OrderCreateRequestDto request = new OrderCreateRequestDto(email, statement);
 
-        // 첫 번째 주문은 현재 시간에서 진행
-        LocalDateTime batch1Time = LocalDateTime.now();
-        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class)) {
+        // 첫 번째 주문은 설정한 시간에서 진행
+        LocalDateTime batch1Time = LocalDateTime.of(2026, 3, 25, 10, 0);
+        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
             mockedTime.when(LocalDateTime::now).thenReturn(batch1Time);
-            orderService.createOrMergeOrder(request);
+            orderService.createNewOrder(email, statement);
         }
 
         // 두 번째 주문은 현재 시간보다 하루 뒤에서 진행
         LocalDateTime batch2Time = batch1Time.plusDays(1);
-        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class)) {
+        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
             mockedTime.when(LocalDateTime::now).thenReturn(batch2Time);
-            orderService.createOrMergeOrder(request);
+            orderService.createNewOrder(email, statement);
         }
 
         List<CoffeeOrder> orders = orderRepository.findAll();
-        assertThat(orders).hasSize(2);
+
+        // CoffeeOrder는 1개
+        assertThat(orders).hasSize(1);
+
+        // 주문서는 2개
+        List<OrderStatement> statements = orders.get(0).getStatements();
+        assertThat(statements).hasSize(2);
+
+        // 생성 시간이 다른지 확인
+        assertThat(statements.get(0).getCreateDate()).isNotEqualTo(statements.get(1).getCreateDate());
     }
 
     @Test
@@ -119,9 +126,9 @@ class OrderServiceMergeTest {
         OrderCreateRequestDto request1 = new OrderCreateRequestDto("dnclsehd122@gmail.com", statement);
         OrderCreateRequestDto request2 = new OrderCreateRequestDto("dnclsehd123@naver.com", statement);
 
-        // 현재 시간으로 고정
-        LocalDateTime fixedTime = LocalDateTime.now();
-        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class)) {
+        // 시간 설정
+        LocalDateTime fixedTime = LocalDateTime.of(2026, 3, 25, 10, 0);
+        try (MockedStatic<LocalDateTime> mockedTime = mockStatic(LocalDateTime.class, Mockito.CALLS_REAL_METHODS)) {
             mockedTime.when(LocalDateTime::now).thenReturn(fixedTime);
 
             orderService.createOrMergeOrder(request1);

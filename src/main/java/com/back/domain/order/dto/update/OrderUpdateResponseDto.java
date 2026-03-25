@@ -7,15 +7,13 @@ import java.time.LocalDateTime;
 public record OrderUpdateResponseDto(
         Integer orderStatementId,
         String email,
-        LocalDateTime createdAt,
-        int totalAmount
+        LocalDateTime createdAt
 ) {
     public static OrderUpdateResponseDto from(OrderStatement statement, String email) {
         return new OrderUpdateResponseDto(
                 statement.getId(),
                 email,
-                statement.getCreateDate(),
-                statement.getOrder().getTotalAmount()
+                statement.getCreateDate()
         );
     }
 }

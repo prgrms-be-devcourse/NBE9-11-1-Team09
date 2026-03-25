@@ -94,7 +94,7 @@ public class OrderService {
         OrderStatement prevStatement = orderStatementRepository.findById(orderStatementId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "수정할 " + orderStatementId + "번 주문서을 찾을 수 없습니다."
+                        "수정할 " + orderStatementId + "번 주문서를 찾을 수 없습니다."
                 ));
 
         OrderStatement renewStatement = new OrderStatement(

@@ -92,7 +92,7 @@ class OrderServiceTest {
                 () -> orderService.updateOrder(9999, prevOrderStatement.getId(), requestDto)
         );
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(exception.getReason()).contains("9999번 주문을 찾을 수 없습니다.");
+        assertThat(exception.getReason()).contains("수정할 9999번 주문을 찾을 수 없습니다.");
     }
 
     @Test
