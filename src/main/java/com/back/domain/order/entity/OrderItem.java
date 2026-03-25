@@ -25,4 +25,10 @@ public class OrderItem extends BaseEntity {
     private Product product;
 
     private int quantity;
+
+    // 개별 상품 수량 계산
+    public int getTotalPrice() {
+        // 단가 * 수량
+        return this.product.getPrice() * this.quantity;
+    }
 }

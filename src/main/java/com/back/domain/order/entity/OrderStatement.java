@@ -42,4 +42,12 @@ public class OrderStatement extends BaseEntity {
         orderItems.add(orderItem);
         return orderItem;
     }
+
+    // 배송지별 주문서
+    public int getTotalAmount() {
+        // 해당 주문서에 담긴 모든 아이템 가격의 합 반환
+        return orderItems.stream()
+                .mapToInt(OrderItem::getTotalPrice)
+                .sum();
+    }
 }

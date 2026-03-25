@@ -75,4 +75,12 @@ public class CoffeeOrder extends BaseEntity {
     public void markAsShipped() {
         this.status = OrderStatus.SHIPPED;
     }
+
+    // 전체 주문
+    public int getTotalAmount() {
+        // 각 주문서에 담긴 모든 가격의 합의 합 반환
+        return statements.stream()
+                .mapToInt(OrderStatement::getTotalAmount)
+                .sum();
+    }
 }
