@@ -21,9 +21,8 @@ public abstract class BaseEntity {
     private Integer id;
 
     @CreatedDate
-    private LocalDateTime createDate;
+    protected LocalDateTime createDate;
 
     @LastModifiedDate
-    private LocalDateTime modifyDate;
-
+    protected LocalDateTime modifyDate;
 }
