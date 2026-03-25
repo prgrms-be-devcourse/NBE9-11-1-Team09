@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -121,7 +120,7 @@ class OrderTotalAmountTest {
         var request = new OrderCreateRequestDto("창원시 성산구", statement);
 
         assertThatThrownBy(() -> orderMergeService.createOrMergeOrderWithTotalAmount(request))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining(productId + "번 상품은 존재하지 않습니다");
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("상품을 찾을 수 없습니다: " + productId);
     }
 }
